@@ -1,0 +1,50 @@
+####
+# Docker-Compose for Open Game DB API
+#
+version: '3'
+services:
+ app:
+  build: .
+  depends_on:
+   - mongo
+   - nginx
+  ports:
+   - 5000:5000
+  env_file:
+    - config.env
+## If you're using traefik:
+#  labels:
+#   traefik.frontend.rule: "Host:opl.dc"
+#   traefik.port: "5000"
+#   traefik.protocol: "http"
+#   traefik.enable: "true"
+  volumes:
+   - ./static:/app/static:ro
+   - ./lib:/app/lib:ro
+   - ./src/app.py:/app/app.py:ro
+  restart: unless-stopped
+
+ nginx:
+  image: nginx
+  ports:
+   - "5001:80"
+  env_file:
+    - config.env
+  volumes:
+   - ./static:/usr/share/nginx/html/:ro
+## If you're using traefik:
+#  labels:
+#  labels:
+#   traefik.frontend.rule: "Host:static.opl.dc"
+#   traefik.port: "80"
+#   traefik.protocol: "http"
+#   traefik.enable: "true"
+  restart: unless-stopped
+
+ mongo:
+  image: mongo
+  env_file:
+    - config.env
+  volumes:
+   - ./db/mongo:/data/db
+  restart: unless-stopped
